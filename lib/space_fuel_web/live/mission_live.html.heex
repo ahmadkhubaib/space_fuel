@@ -1,0 +1,154 @@
+<main class="min-h-screen bg-slate-100 text-slate-900 py-10">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="mb-8">
+      <h1 class="text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
+        Interplanetary Fuel Calculator
+      </h1>
+      <p class="mt-4 max-w-3xl text-lg leading-8 text-slate-600">
+        Build a valid mission path and calculate total fuel.
+      </p>
+    </div>
+
+    <section class="grid grid-cols-1 gap-6 xl:grid-cols-12">
+      <div class="xl:col-span-8 rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
+        <h2 class="mb-2 text-2xl font-semibold tracking-tight text-slate-950">Mission Builder</h2>
+        <p class="mb-6 text-sm leading-6 text-slate-600">
+          Define spacecraft mass and construct the ordered flight path.
+        </p>
+
+        <.form for={@form} id="mission-form" phx-change="validate" phx-submit="validate">
+          <div class="mb-8">
+            <label class="mb-2 block text-sm font-medium text-slate-700">
+              Equipment mass (kg)
+            </label>
+            <.input
+              field={@form[:mass]}
+              type="number"
+              min="1"
+              max={MissionForm.max_mass()}
+              phx-debounce="500"
+              class="mission-mass-input input input-bordered w-full rounded-2xl bg-slate-50 text-base text-slate-900 shadow-sm transition focus:bg-white"
+            />
+          </div>
+
+          <div>
+            <div class="mb-4 flex items-start justify-between gap-4">
+              <div>
+                <h3 class="text-[2rem] font-semibold tracking-tight text-slate-950">Flight path</h3>
+                <p class="mt-1 text-sm text-slate-600">Ordered actions performed by the spacecraft.</p>
+              </div>
+            </div>
+
+            <div class="space-y-5">
+              <MissionComponents.builder_errors
+                form={@form}
+                result={@result}
+                duplicate_indexes={@duplicate_indexes}
+              />
+
+              <%= for {step, idx} <- Enum.with_index(@form_data["steps"] || []) do %>
+                <MissionComponents.step_row
+                  idx={idx}
+                  step={step}
+                  steps_count={length(@form_data["steps"] || [])}
+                  action_options={@action_options}
+                  planet_options={@planet_options}
+                  duplicate_indexes={@duplicate_indexes}
+                />
+              <% end %>
+            </div>
+
+            <div class="mt-6">
+              <button
+                id="add-step-button"
+                type="button"
+                phx-click="add_step"
+                class="btn btn-primary rounded-2xl text-sm font-semibold text-white shadow-sm"
+              >
+                + Add another step
+              </button>
+            </div>
+          </div>
+        </.form>
+      </div>
+
+      <div class="xl:col-span-4">
+        <div class="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-7 xl:sticky xl:top-6">
+          <h2 class="mb-2 text-2xl font-semibold tracking-tight text-slate-950">Mission Summary</h2>
+          <p class="mb-5 text-sm leading-6 text-slate-600">
+            Live calculation status and mission output.
+          </p>
+
+          <div class="rounded-3xl bg-slate-50 px-5 py-5 ring-1 ring-slate-200">
+            <p class="text-sm font-medium text-slate-600">Total fuel required</p>
+            <h1 class="mt-2 text-5xl font-semibold tracking-tight text-slate-950">
+              <%= if @result, do: "#{@result.total_fuel} kg", else: "0 kg" %>
+            </h1>
+          </div>
+
+          <MissionComponents.summary_status result={@result} />
+
+          <div class="mt-5 overflow-hidden rounded-2xl border border-slate-200">
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-slate-200 bg-white text-slate-900">
+                <thead class="bg-slate-50">
+                  <tr>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.08em] text-slate-600">
+                      #
+                    </th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.08em] text-slate-600">
+                      Action
+                    </th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.08em] text-slate-600">
+                      Planet
+                    </th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.08em] text-slate-600">
+                      Fuel added
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 bg-white">
+                  <%= if @result do %>
+                    <%= for {step, idx} <- Enum.with_index(@result.breakdown, 1) do %>
+                      <tr class="transition hover:bg-slate-50">
+                        <td class="whitespace-nowrap px-4 py-4 text-sm font-medium text-slate-900">
+                          <%= idx %>
+                        </td>
+                        <td class="whitespace-nowrap px-4 py-4 text-sm text-slate-700">
+                          <%= String.capitalize(step.action) %>
+                        </td>
+                        <td class="whitespace-nowrap px-4 py-4 text-sm text-slate-700">
+                          <%= step.planet %>
+                        </td>
+                        <td class="whitespace-nowrap px-4 py-4 text-sm font-medium text-slate-900">
+                          <%= step.fuel %> kg
+                        </td>
+                      </tr>
+                    <% end %>
+                  <% else %>
+                    <%= for {step, idx} <- Enum.with_index(@form_data["steps"] || [], 1) do %>
+                      <tr class="transition hover:bg-slate-50">
+                        <td class="whitespace-nowrap px-4 py-4 text-sm font-medium text-slate-900">
+                          <%= idx %>
+                        </td>
+                        <td class="whitespace-nowrap px-4 py-4 text-sm text-slate-700">
+                          <%= String.capitalize(step["action"] || "") %>
+                        </td>
+                        <td class="whitespace-nowrap px-4 py-4 text-sm text-slate-700">
+                          <%= step["planet"] || "" %>
+                        </td>
+                        <td class="whitespace-nowrap px-4 py-4 text-sm text-slate-400">
+                          —
+                        </td>
+                      </tr>
+                    <% end %>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>

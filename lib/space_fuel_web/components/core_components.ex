@@ -173,6 +173,7 @@ defmodule SpaceFuelWeb.CoreComponents do
   attr :checked, :boolean, doc: "the checked flag for checkbox inputs"
   attr :prompt, :string, default: nil, doc: "the prompt for select inputs"
   attr :options, :list, doc: "the options to pass to Phoenix.HTML.Form.options_for_select/2"
+  attr :disabled_values, :list, default: [], doc: "list of option values that should be rendered disabled"
   attr :multiple, :boolean, default: false, doc: "the multiple flag for select inputs"
   attr :class, :any, default: nil, doc: "the input class to use over defaults"
   attr :error_class, :any, default: nil, doc: "the input error class to use over defaults"
@@ -244,7 +245,13 @@ defmodule SpaceFuelWeb.CoreComponents do
           {@rest}
         >
           <option :if={@prompt} value="">{@prompt}</option>
-          {Phoenix.HTML.Form.options_for_select(@options, @value)}
+          <option :for={{label, value} <- @options}
+            value={value}
+            selected={value == @value}
+            disabled={value in @disabled_values}
+          >
+            {label}
+          </option>
         </select>
       </label>
       <.error :for={msg <- @errors}>{msg}</.error>
@@ -319,7 +326,7 @@ defmodule SpaceFuelWeb.CoreComponents do
         <h1 class="text-lg font-semibold leading-8">
           {render_slot(@inner_block)}
         </h1>
-        <p :if={@subtitle != []} class="text-sm text-base-content/70">
+        <p :if={@subtitle != []} class="text-sm text-gray-900">
           {render_slot(@subtitle)}
         </p>
       </div>
