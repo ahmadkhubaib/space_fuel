@@ -1,18 +1,22 @@
 # SpaceFuel
 
-To start your Phoenix server:
+Interplanetary fuel calculator built with Elixir and Phoenix LiveView.
 
-* Run `mix setup` to install and setup dependencies
-* Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
+## Run
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+1. Install dependencies:
+   `mix setup`
+2. Start the app:
+   `mix phx.server`
+3. Open:
+   `http://localhost:4000`
 
-Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
+## Test
 
-## Learn more
+Run:
+`mix test`
 
-* Official website: https://www.phoenixframework.org/
-* Guides: https://hexdocs.pm/phoenix/overview.html
-* Docs: https://hexdocs.pm/phoenix
-* Forum: https://elixirforum.com/c/phoenix-forum
-* Source: https://github.com/phoenixframework/phoenix
+## Future Improvement
+
+If this project grows, `Commanded` could be used to model mission changes as commands and events.
+That would help if you later want audit history, replayable mission updates, or more complex workflows.
