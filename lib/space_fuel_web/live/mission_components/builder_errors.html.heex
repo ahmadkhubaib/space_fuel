@@ -1,0 +1,33 @@
+<% has_empty_mass_error =
+  Enum.any?(@form.errors, fn
+    {:mass, {"can't be blank", _opts}} -> true
+    _error -> false
+  end) %>
+<% has_step_error =
+  MapSet.size(@duplicate_indexes) > 0 or
+    Enum.any?(@form.errors, fn {field, _error} -> field == :steps end) %>
+<% step_error_message =
+  Enum.find_value(@form.errors, fn
+    {:steps, error} -> translate_error(error)
+    _error -> nil
+  end) %>
+
+<%= if step_error_message do %>
+  <.status_alert
+    id="invalid-steps-alert"
+    tone={:error}
+    title="Invalid steps"
+    message={step_error_message}
+    class="mb-5 w-full max-w-3xl"
+  />
+<% end %>
+
+<%= if is_nil(@result) and has_empty_mass_error and not has_step_error do %>
+  <.status_alert
+    id="empty-mass-alert"
+    tone={:warning}
+    title="Equipment mass cannot be empty"
+    message="Enter the equipment mass to calculate fuel."
+    class="mb-5 w-full max-w-3xl"
+  />
+<% end %>

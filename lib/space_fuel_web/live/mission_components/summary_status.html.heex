@@ -1,0 +1,17 @@
+<%= if is_nil(@result) do %>
+  <.status_alert
+    id="mission-summary-status"
+    tone={:warning}
+    title="Fix the errors in Mission Builder"
+    message="Resolve the highlighted validation errors to calculate fuel."
+    class="mt-4"
+  />
+<% else %>
+  <.status_alert
+    id="mission-summary-status"
+    tone={:success}
+    title="Mission valid"
+    message="Fuel calculation is available for the current sequence."
+    class="mt-4"
+  />
+<% end %>
